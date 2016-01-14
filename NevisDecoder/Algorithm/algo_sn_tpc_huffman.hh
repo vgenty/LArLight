@@ -25,7 +25,7 @@ namespace larlight {
     virtual bool decode_fem_header(const UInt_t *event_header);
 
     virtual bool process_word(const UInt_t word);
-
+    
   protected:  
 
     // virtual bool process_fem_header
@@ -37,8 +37,19 @@ namespace larlight {
     virtual bool process_ch_word
     (const UInt_t word,UInt_t &last_word);
 
+    // SN compression has changed (?)
+    virtual inline bool is_compressed(const UInt_t word)
+    { return ( (word>>15) == 0x1 ); };
+
+    //Decoding huffman word also changed (?)
+    virtual bool decode_ch_word(const UInt_t word, UInt_t &last_word);
+
+    //Let inherit and remove checksum :-)
+    virtual bool check_event_quality();
+    
     void store_ch_data();
 
+    
   protected:
 
     /// These are the same as the ones defined in fifo.hh, and used for

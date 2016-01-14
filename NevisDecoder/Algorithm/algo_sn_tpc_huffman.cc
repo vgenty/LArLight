@@ -465,6 +465,111 @@ namespace larlight {
     return status;
   }
   
+  //#########################################################
+  bool algo_sn_tpc_huffman::check_event_quality(){
+  //#########################################################
+
+    bool status = true;
+
+    if(_verbosity[MSG::INFO]) Message::send( MSG::INFO,__FUNCTION__, "algo_sn_tpc_huffman" );
+    // Check if _checksum and _nwords agrees with that of event header.
+    // Yun-Tse 2014/11/19: Perhaps this _nwords-=1; was for some old data format?
+    // _nwords-=1;
+    if(_nwords!=_header_info.nwords){
+
+      Message::send(MSG::ERROR,__FUNCTION__,
+		    Form("Disagreement on nwords (so?): counted=%u, expected=%u",_nwords,_header_info.nwords));
+
+      //status = false;
+
+    }
+
+    //if(_checksum != _header_info.checksum)
+    if((_checksum & 0xffffff) !=_header_info.checksum){
+      
+      if( ((_checksum + 0x503f) & 0xffffff) == _header_info.checksum) {
+	Message::send(MSG::WARNING,__FUNCTION__,
+		      Form("Fix-able checksum disagreement: summed=%x, expected=%x (Event=%d,FEM=%d), w/ word count=%d (#ch = %zu)",
+			   _checksum,
+			   _header_info.checksum,
+			   _header_info.event_number,
+			   _header_info.module_address,
+			   _nwords,
+			   _event_data->size()));
+	_ch_last_word_allow = true;
+      }
+      else {
+	Message::send(MSG::ERROR,__FUNCTION__,
+		      Form("Disagreement on checksum (so?): summed=%x, expected=%x",_checksum,_header_info.checksum));
+	//status = false;
+	
+      }
+    }
+
+    return status;
+
+  }
+
+  bool algo_sn_tpc_huffman::decode_ch_word(const UInt_t word, 
+					   UInt_t &last_word)
+  {
+  //#########################################################
+
+    bool status = true;
+    // Simply append if it is not compressed
+    if( !(is_compressed(word)) ) _ch_data.push_back( (word & 0xfff) );
+
+    else if(!(_ch_data.size())){
+
+      // This is a problem: if huffman coded, then we must have a previous ADC sample
+      // as a reference. Raise an error.
+
+      Message::send(MSG::ERROR,__FUNCTION__,
+		    Form("Huffman coded word %x found while the previous was non-ADC word (%x)!",
+			 word,last_word));
+
+      status = false;
+
+    }
+    else{
+
+      // Compresed data is in last 15 bit of this word.
+      
+      UInt_t data = (word & 0xffff);
+      
+      size_t zero_count = 0;
+      bool   non_zero_found = false;
+      for(short index=14; index>=0 && status; --index){
+
+	if( !((data >> index) & 0x1) )
+
+	  zero_count += 1;
+
+	else {
+
+	  status = add_huffman_adc(_ch_data,zero_count);
+	  
+	  zero_count = 0;
+	  if(!status) {
+	    Message::send(MSG::ERROR,__FUNCTION__,
+			  Form("Error in decoding huffman data word: 0x%x",data));
+	    break;
+	  }
+	}
+      }
+
+      if(!status)
+
+	Message::send(MSG::ERROR,__FUNCTION__,
+		      Form("Encountered unexpected number of zeros (=%zu) in the compressed word %x!",
+			   zero_count,word));
+
+    }
+
+    return status;
+
+  }
+
 
   void algo_sn_tpc_huffman::store_ch_data() {
     // Save
@@ -480,4 +585,5 @@ namespace larlight {
     return;
 
   }
+  
 }

@@ -75,7 +75,7 @@ namespace larlight {
 
     bool store_event();
 
-    bool decode_ch_word                   (const UInt_t word, UInt_t &last_word);
+    virtual bool decode_ch_word(const UInt_t word, UInt_t &last_word);
 
     virtual void reset();
 
