@@ -22,6 +22,7 @@ namespace larlight {
         return FEM::FEM_HEADER;
       else if( (word & 0xf000) == 0xf000 )         // Could be ADC word
         return FEM::FEM_HEADER;
+      
       else if( !((word>>15) & 0x1) ) {
 
         if ( ( word & 0xf000 ) == 0x1000 )         // Channel time word
@@ -189,15 +190,15 @@ namespace larlight {
 	_nwords++;
 	status = store_event();
 
-      } */
-
+	} */
+      
       if(status){ 
 
 	if(!(_header_info.nwords))
 
 	  status = process_fem_header(word,_last_word);
 
-	else{
+	else{ // it's a huffman compressed word
 
 	  UInt_t first_word  = (word & 0xffff);
 	  UInt_t second_word = (word >> 16);
@@ -212,6 +213,7 @@ namespace larlight {
       break;
 
     case FEM::EVENT_LAST_WORD:
+      
       if ( last_word_class == FEM::CHANNEL_PACKET_LAST_WORD ) {
         // This is the normal end of event, with some packets in the last channel
         status = process_event_last_word(word,_last_word);
@@ -227,19 +229,71 @@ namespace larlight {
         // 1) Channel header
         // 2) a 16-bit zero-padding
         store_ch_data();
-        status = process_event_last_word(word,_last_word);
-
+	status = process_event_last_word(word,_last_word);
+	
       } else {
+	//neither happened, we didn't see 16 bit 0 pad, channel header... or end of packet... we saw uncompressed ADC???
+	
+	Message::send( MSG::WARNING,__FUNCTION__,
+		       Form("EVENT END unexpected... word = event last word, nwords = %d, header info nwords = %d" , _nwords, _header_info.nwords) );
+	// Store
 
-        UInt_t first_word  = (word & 0xffff);
-        UInt_t second_word = (word >> 16);
+	// Save
+	// _ch_data.set_module_id( _header_info.module_id );
+	// _ch_data.set_module_address( _header_info.module_address );
+	// _ch_data.set_channel_number( _channel_number_holder );
+	// _ch_data.set_readout_frame_number( _readout_frame_number_holder );
+	// _event_data->push_back( _ch_data );
 
-        status = process_ch_word(first_word,_last_word);
+	// _ch_data.clear_data();
 
-        if(status) status = process_ch_word(second_word,_last_word);
-      }
+	store_ch_data();
 
-      break;
+       
+	// _ch_data.set_module_id(_header_info.module_id);
+	// _ch_data.set_module_address(_header_info.module_address);
+	// _event_data->push_back(_ch_data);
+      
+	// _ch_data.clear_data();
+      
+      
+	// Attempt to store data if nwords matches with the expected number
+	if(status && _nwords == _header_info.nwords){
+	  Message::send( MSG::INFO,__FUNCTION__, Form("STATUS ok... number of words matched to header. word = event last word, nwords = %d, header info nwords = %d, we have _nwords++, checksum, and store_event()" , _nwords, _header_info.nwords) );
+	  _nwords++;
+	  // is line below right?
+	  _checksum += word;
+
+	  _last_word = word;
+	  status  = store_event();
+	}
+	
+	else {
+	  Message::send( MSG::ERROR,__FUNCTION__, Form("Damn, what happened? I count _nwords = %d, But header tells me _header.nwords = %d",_nwords,_header_info.nwords) );
+	  
+	  status = false;
+	  
+	}
+
+	
+        // vic: don not do this, bit shift off FEM::EVENT_LAST_WORD... will show up as huffman compressed !
+	//
+        // UInt_t first_word  = (word & 0xffff);
+        // UInt_t second_word = (word >> 16);
+
+        // status = process_ch_word(first_word,_last_word);
+
+        // if(status) status = process_ch_word(second_word,_last_word);
+      }	
+
+	break;
+      
+      
+
+
+    
+
+    
     default:
       UInt_t first_word  = (word & 0xffff);
       UInt_t second_word = (word >> 16);
@@ -270,14 +324,16 @@ namespace larlight {
   }
 
   bool algo_sn_tpc_huffman::process_event_last_word(const UInt_t word,
-                                                 UInt_t &last_word)
+						    UInt_t &last_word)
   {
     bool status = true;
 
     //
     // Make an explicit check.
-    // Previous word should be the channel last word of packet
+    // Previous word should be the channel last word of packet 
     //
+    // vic: ( sometimes it's not (?) )
+    
     UInt_t last_word_class = get_word_class(last_word);
 
     // Yun-Tse 2015/1/20: Add the possibility to have a zero-padding word before
@@ -297,7 +353,7 @@ namespace larlight {
   }
 
   bool algo_sn_tpc_huffman::process_ch_word(const UInt_t word,
-					 UInt_t &last_word) 
+					    UInt_t &last_word) 
   {
 
     //
@@ -322,6 +378,7 @@ namespace larlight {
 	status = false;
       }else if(_verbosity[MSG::INFO])
       */
+      
       if ( get_word_class(last_word) == FEM::CHANNEL_PACKET_LAST_WORD ) {
 
 	Message::send(MSG::INFO,__FUNCTION__,
@@ -398,27 +455,38 @@ namespace larlight {
       }
 
       break;
-
-    // Yun-Tse 2015/1/26: I am not sure if this will happen in the current format...
-    /* case FEM::EVENT_LAST_WORD: {
-      Message::send( MSG::INFO,__FUNCTION__, Form("word = event last word, nwords = %d, header info nwords = %d" , _nwords, _header_info.nwords) );
-      // Store
-      _ch_data.set_module_id(_header_info.module_id);
-      _ch_data.set_module_address(_header_info.module_address);
-      _event_data->push_back(_ch_data);
-
-      _ch_data.clear_data();
-
+    
+      //Yun-Tse 2015/1/26: I am not sure if this will happen in the current format...
+      //vic: i just saw it happen, uncompressed ADC value sitting at event boundary
+    // case FEM::EVENT_LAST_WORD: {
       
-      // Attempt to store data if nwords matches with the expected number
-      if(status && _nwords == _header_info.nwords){
-      Message::send( MSG::INFO,__FUNCTION__, Form("if(status && _nwords == _header_info.nwords), word = event last word, nwords = %d, header info nwords = %d, we have _nwords++, checksum, and store_event()" , _nwords, _header_info.nwords) );
-        _nwords++;
-        _checksum += word;
-        status = store_event();
-      }
-      break;
-    } */
+    //   Message::send( MSG::WARNING,__FUNCTION__, Form("Event ended unexpected... word = event last word, nwords = %d, header info nwords = %d" , _nwords, _header_info.nwords) );
+    //   // Store
+
+    //   _ch_data.set_module_id(_header_info.module_id);
+    //   _ch_data.set_module_address(_header_info.module_address);
+    //   _event_data->push_back(_ch_data);
+      
+    //   _ch_data.clear_data();
+      
+      
+    //   // Attempt to store data if nwords matches with the expected number
+    //   if(status && _nwords == _header_info.nwords){
+    //   	Message::send( MSG::INFO,__FUNCTION__, Form("if(status && _nwords == _header_info.nwords), word = event last word, nwords = %d, header info nwords = %d, we have _nwords++, checksum, and store_event()" , _nwords, _header_info.nwords) );
+    //     _nwords++;
+    //     _checksum += word;
+    //     status  = store_event();
+    //   }
+
+    //   else {
+    // 	Message::send( MSG::ERROR,__FUNCTION__, Form("Damn, what happened?") );
+	
+    // 	status = false;
+	
+    //   }
+    //   break;
+      
+    // }
 
     case FEM::CHANNEL_TIME: {
       if ( ( last_word_class != FEM::CHANNEL_HEADER ) && ( last_word_class != FEM::CHANNEL_PACKET_LAST_WORD ) ) {

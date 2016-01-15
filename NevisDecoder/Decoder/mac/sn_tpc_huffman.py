@@ -50,7 +50,7 @@ algo=fmwk.algo_sn_tpc_huffman()
 algo.set_verbosity(fmwk.MSG.NORMAL)
 
 # Set algorithm's back-trace mode with positive int argument (=# words to be backtraced)
-algo.set_backtrace_mode(1000)
+algo.set_backtrace_mode(50)
 
 # Create the decoder instance
 decoder=fmwk.decoder_manager()
@@ -83,15 +83,16 @@ decoder.set_output_filename(outname)
 #    - WARNING ... suppress NORMAL information
 #    - ERROR   ... suppress WARNING information
 # For the given info level, all lower level information will be suppressed.
-#decoder.set_verbosity(fmwk.MSG.DEBUG)
-#decoder.set_verbosity(fmwk.MSG.INFO)
-#decoder.set_verbosity(fmwk.MSG.NORMAL)
+# decoder.set_verbosity(fmwk.MSG.DEBUG)
+# decoder.set_verbosity(fmwk.MSG.INFO)
+# decoder.set_verbosity(fmwk.MSG.NORMAL)
 
 # Set debug mode True if you wish to continue in the decoding event
 # loop with exception handling. This avoids saving an event with
 # missing event words or conflicting encoding algorithm, and continue
 # in the decoding event loop. When turned off, the program exits as
 # soon as it encounters any issue.
+
 #decoder.debug_mode(False)
 decoder.debug_mode(True)
 

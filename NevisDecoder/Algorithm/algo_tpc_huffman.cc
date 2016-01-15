@@ -300,6 +300,7 @@ namespace larlight {
 
       _event_header_count++;
 
+
       if(_event_header_count == FEM_HEADER_COUNT)
 
 	status = decode_fem_header(_event_header_words);
