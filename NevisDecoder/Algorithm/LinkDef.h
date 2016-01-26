@@ -9,6 +9,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+
 #pragma link C++ class larlight::decode_algo_exception+;
 #pragma link C++ class larlight::algo_base+;
 #pragma link C++ class larlight::algo_slow_readout_decoder+;
@@ -17,6 +18,15 @@
 #pragma link C++ class larlight::algo_pmt_xmit+;
 #pragma link C++ class larlight::algo_tpc_huffman+;
 #pragma link C++ class larlight::algo_sn_tpc_huffman+;
+
+#pragma link C++ class larlight::algo_debug_sn_tpc_huffman+;
+
 #pragma link C++ class larlight::algo_trig_decoder+;
 #pragma link C++ class larlight::algo_fem_decoder_base+;
+
+//#pragma link C++ namespace larlite::SN;
+//#pragma link C++ enum larlight::SN::PROBLEM+;
+//#pragma link C++ class std::vector<larlight::SN::PROBLEM>+;
+
+
 #endif
