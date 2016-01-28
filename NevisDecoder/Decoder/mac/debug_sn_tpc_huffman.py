@@ -38,7 +38,10 @@ for file_name in files:
 
     
     algo=fmwk.algo_debug_sn_tpc_huffman()
-    # algo.set_verbosity(fmwk.MSG.NORMAL)
+    algo.SetChCheck(63);
+
+    algo.set_verbosity(fmwk.MSG.NORMAL)
+
     algo.set_backtrace_mode(50)
     decoder=fmwk.decoder_manager()
     decoder.set_decoder(algo);
@@ -55,10 +58,15 @@ for file_name in files:
     outfile.write('%s,%s,' % (tstart, tend))
     probs = algo.problems()
 
-    for key in problems :
+    
+    #for key in problems :
+    for key in xrange(6) :
         if ( probs.count( int(key) ) == True ):
-            outfile.write("%s,\t" % problems[key])
-
+            outfile.write("%s," % key)
+        else  :
+            outfile.write("0," )
+            #outfile.write("%s,\t" % problems[key])
+            
     outfile.write("\n")
     
 

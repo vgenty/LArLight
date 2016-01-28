@@ -38,7 +38,9 @@ namespace larlight {
     virtual bool process_word(const UInt_t word);
 
     std::set<int>& problems() { return _problems; } 
-      
+
+    void SetChCheck(UShort_t ch) { _ch_check = ch; }
+
   protected:  
 
     // virtual bool process_fem_header
@@ -74,6 +76,7 @@ namespace larlight {
 
     // Each data file has set of problems, right?
     std::set<int> _problems;
+    UShort_t _ch_check;
     
   };
 

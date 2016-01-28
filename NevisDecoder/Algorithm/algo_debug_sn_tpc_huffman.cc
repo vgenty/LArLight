@@ -5,6 +5,7 @@ namespace larlight {
   algo_debug_sn_tpc_huffman::algo_debug_sn_tpc_huffman() : algo_tpc_huffman()
   {
     _name = "algo_debug_sn_tpc_huffman";
+    _ch_check = 0;
     reset();
   }  
 
@@ -269,7 +270,9 @@ namespace larlight {
 	}
 	
 	else {
-	  _problems.insert(2);
+	  std::cout << "This channel is... " << _channel_number_holder << "\n";
+	  std::cout << "I care about  channel .. " << _ch_check << "\n";
+	  if ( _channel_number_holder == _ch_check ) _problems.insert(2);
 	  
 	  Message::send( MSG::ERROR,__FUNCTION__, Form("Damn, what happened? I count _nwords = %d, But header tells me _header.nwords = %d",_nwords,_header_info.nwords) );
 	  
@@ -340,7 +343,7 @@ namespace larlight {
       Message::send(MSG::ERROR,__FUNCTION__,
                     Form("Unexpected event last word (%x) with the previous word %x!",word,last_word));
 
-      _problems.insert(4);
+      if ( _channel_number_holder == _ch_check ) _problems.insert(4);
       status = false;
 
     }
@@ -450,8 +453,8 @@ namespace larlight {
 
       else if ( last_word_class == FEM::CHANNEL_WORD ) {
 
-	//_problems.insert(SN::MISSING_LAST_CHANNEL_WORD);
-	_problems.insert(1);
+	//if ( _channel_number_holder == _ch_check ) _problems.insert(SN::MISSING_LAST_CHANNEL_WORD);
+	if ( _channel_number_holder == _ch_check ) _problems.insert(1);
 	
 	Message::send(MSG::INFO,__FUNCTION__, "YOU ARE MISSING END OF CHANNEL PACKET. Continue to close out the channel anyways.");
 	
@@ -465,7 +468,7 @@ namespace larlight {
 	
       } else {
 	
-	_problems.insert(4);
+	if ( _channel_number_holder == _ch_check ) _problems.insert(4);
 	Message::send(MSG::ERROR,__FUNCTION__,
 		      Form("Unexpected channel header (%x)! Last word = %x",word,last_word));
 	
@@ -510,7 +513,7 @@ namespace larlight {
     case FEM::CHANNEL_TIME: {
       if ( ( last_word_class != FEM::CHANNEL_HEADER ) && ( last_word_class != FEM::CHANNEL_PACKET_LAST_WORD ) ) {
 
-	_problems.insert(4);
+	if ( _channel_number_holder == _ch_check ) _problems.insert(4);
 	status = false;
         Message::send(MSG::ERROR,__FUNCTION__,
                     Form("Unexpected channel time word (%x) with the previous word %x (word type %d)!", word, last_word, last_word_class ) );
@@ -599,7 +602,7 @@ namespace larlight {
   }
 
   bool algo_debug_sn_tpc_huffman::decode_ch_word(const UInt_t word, 
-					   UInt_t &last_word)
+						 UInt_t &last_word)
   {
   //#########################################################
 
@@ -611,15 +614,15 @@ namespace larlight {
 
       // This is a problem: if huffman coded, then we must have a previous ADC sample
       // as a reference. Raise an error.
-
-      _problems.insert(5);
+      
+      if ( _channel_number_holder == _ch_check ) _problems.insert(5);
       Message::send(MSG::ERROR,__FUNCTION__,
 		    Form("Huffman coded word %x found while the previous was non-ADC word (%x)!",
 			 word,last_word));
       
       
-      status = false;
-
+      //status = false;
+      
     }
     else{
 
