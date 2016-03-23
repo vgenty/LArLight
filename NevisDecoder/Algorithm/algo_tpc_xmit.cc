@@ -61,9 +61,9 @@ namespace larlight {
 
 	_ch_data.set_channel_number( (word & 0xfff) );
 
-	if(_verbosity[MSG::DEBUG])
+	if(_verbosity[MSG::INFO])
 
-	  Message::send(MSG::DEBUG,__FUNCTION__,
+	  Message::send(MSG::INFO,__FUNCTION__,
 			Form("New channel header: %d",_ch_data.channel_number()));
 
       }else{
@@ -89,9 +89,9 @@ namespace larlight {
 
 	if(ch == _ch_data.channel_number()) {
 
-	  if(_verbosity[MSG::DEBUG])
+	  if(_verbosity[MSG::INFO])
 
-	    Message::send(MSG::DEBUG,__FUNCTION__,
+	    Message::send(MSG::INFO,__FUNCTION__,
 			  Form("Finished reading %zu samples for Ch %d",
 			       _ch_data.size(),_ch_data.channel_number()));
 
@@ -165,7 +165,7 @@ namespace larlight {
 
       _nwords++;
       _checksum += word;
-      //std::cout<<_nwords<<" ... "<<_checksum<<std::endl;
+      //std::cout<<"_nwords"<<_nwords<<" ... "<<_checksum<<std::endl;
     }else{
 
       Message::send(MSG::ERROR,__FUNCTION__,
@@ -190,7 +190,12 @@ namespace larlight {
     if(_verbosity[MSG::INFO]) Message::send( MSG::INFO,__FUNCTION__, "algo_tpc_xmit" );
     // Check if _checksum and _nwords agrees with that of event header.
     // Yun-Tse 2014/11/19: Perhaps this _nwords-=1; was for some old data format?
-    // _nwords-=1;
+
+    // Vic: number of words in the header is ODD, how does this even happen on 64 channels?
+    Message::send(MSG::INFO,__FUNCTION__,
+		  Form("Vic atrificially adding -=1 to _nwords\n"));
+    
+    _nwords-=1;
     if(_nwords!=_header_info.nwords){
 
       Message::send(MSG::ERROR,__FUNCTION__,

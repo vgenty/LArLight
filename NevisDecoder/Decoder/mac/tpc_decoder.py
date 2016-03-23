@@ -25,7 +25,7 @@ import ROOT
 ROOT.gSystem.Load("libDecoder")
 
 # Load decoder class/namespace
-from ROOT import *
+#from ROOT import *
 from ROOT import larlight as fmwk
 
 #
@@ -79,7 +79,7 @@ decoder.set_output_filename(outname)
 #    - ERROR   ... suppress WARNING information
 # For the given info level, all lower level information will be suppressed.
 #decoder.set_verbosity(fmwk.MSG.DEBUG)
-#decoder.set_verbosity(fmwk.MSG.INFO)
+decoder.set_verbosity(fmwk.MSG.INFO)
 #decoder.set_verbosity(fmwk.MSG.NORMAL)
 
 # Set debug mode True if you wish to continue in the decoding event
@@ -87,7 +87,7 @@ decoder.set_output_filename(outname)
 # missing event words or conflicting encoding algorithm, and continue
 # in the decoding event loop. When turned off, the program exits as
 # soon as it encounters any issue.
-decoder.debug_mode(False)
+decoder.debug_mode(True)
 
 # Finish configuration. Now run it.
 status=decoder.run()

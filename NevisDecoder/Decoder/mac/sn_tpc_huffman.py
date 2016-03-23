@@ -1,7 +1,3 @@
-#
-# Example decoder script.
-#
-
 # Basic python module import
 import os, sys, __main__
 
@@ -25,7 +21,7 @@ import ROOT
 ROOT.gSystem.Load("libDecoder")
 
 # Load decoder class/namespace
-from ROOT import *
+# from ROOT import *
 from ROOT import larlight as fmwk
 
 #
@@ -68,7 +64,7 @@ decoder.set_read_by_block(True)
 # Set read-block size 
 
 #How many words?
-decoder.set_read_block_size(50000)
+#decoder.set_read_block_size(50000)
 
 # Set input file path
 decoder.add_input_filename(fpath)
