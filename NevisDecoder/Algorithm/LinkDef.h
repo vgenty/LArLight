@@ -20,6 +20,7 @@
 #pragma link C++ class larlight::algo_sn_tpc_huffman+;
 
 #pragma link C++ class larlight::algo_debug_sn_tpc_huffman+;
+#pragma link C++ class larlight::algo_sn_tpc_huffincompressible+;
 
 #pragma link C++ class larlight::algo_trig_decoder+;
 #pragma link C++ class larlight::algo_fem_decoder_base+;
