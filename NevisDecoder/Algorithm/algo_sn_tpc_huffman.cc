@@ -4,6 +4,7 @@ namespace larlight {
 
   algo_sn_tpc_huffman::algo_sn_tpc_huffman() : algo_tpc_huffman()
   {
+    _pre_samples = 0;
     _name = "algo_sn_tpc_huffman";
     reset();
   }  

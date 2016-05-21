@@ -49,6 +49,7 @@ namespace larlight {
     
     void store_ch_data();
 
+    void set_pre_samples(UInt_t pre_samples) { _pre_samples = pre_samples; }
     
   protected:
 
@@ -57,6 +58,8 @@ namespace larlight {
     UShort_t  _channel_number_holder;
     UInt_t    _readout_frame_number_holder;
 
+    UInt_t _pre_samples;
+    
   };
 
 }

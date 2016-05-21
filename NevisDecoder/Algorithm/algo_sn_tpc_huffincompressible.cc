@@ -4,6 +4,7 @@ namespace larlight {
 
   algo_sn_tpc_huffincompressible::algo_sn_tpc_huffincompressible() : algo_tpc_huffman()
   {
+    _pre_samples = 0;
     _name = "algo_sn_tpc_huffincompressible";
     reset();
   }  
@@ -22,6 +23,7 @@ namespace larlight {
       if( (word & 0xffff) == 0xffff )              // Unique marker, but with the huffman
                                                    // coding, not unique anymore
         return FEM::FEM_HEADER;
+
       else if( (word & 0xf000) == 0xf000 )         // Could be ADC word
         return FEM::FEM_HEADER;
       
@@ -44,8 +46,9 @@ namespace larlight {
       }
       else if( ((word>>15) & 0x1) ){
         return FEM::CHANNEL_WORD;                  // compressed ADC word
-      }else
+      }else {
         return FEM::UNDEFINED_WORD;
+      }
 
     // FEM::FEM_WORD code = algo_tpc_huffman::get_word_class(word); 
   }
@@ -453,7 +456,7 @@ namespace larlight {
 
         status = false;
         Message::send(MSG::ERROR,__FUNCTION__,
-                    Form("Unexpected channel time word (%x) with the previous word %x (word type %d)!", word, last_word, last_word_class ) );
+		      Form("Unexpected channel time word (%x) with the previous word %x (word type %d)!", word, last_word, last_word_class ) );
       } else {
         _ch_data.set_readout_sample_number( (word & 0xfff) );
       }

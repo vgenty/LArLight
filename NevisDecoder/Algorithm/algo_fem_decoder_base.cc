@@ -39,7 +39,7 @@ namespace larlight {
   bool algo_fem_decoder_base::process_word(UInt_t word)
   //#################################################
   {
-    //std::cout<<Form("%x",word)<<std::endl;
+    // std::cout<<Form("%x",word)<<std::endl;
     // 
     // A simple function to call other members depending on the status.
     // Let other members to deal with expected/unexpected case
