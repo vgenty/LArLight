@@ -33,7 +33,6 @@ out_dir = "./"
 fpath   = argv[1]
 fname   = fpath.split('/')[len(fpath.split('/'))-1]
 outname = fname[0:fname.rfind('.')] + ".root"
-#outname = fpath.replace('.dat','.root')
 
 # Decoder algorithm instance ... currently xmit, slow, or trigger
 
@@ -67,9 +66,7 @@ decoder.set_format(fmwk.FORMAT.BINARY)
 
 #How many words?
 #decoder.set_read_block_size(734)
-print "caca"
-#decoder.set_read_block_size(49224)#49224
-
+#decoder.set_read_block_size(49224) # 49224
 
 # Set input file path
 decoder.add_input_filename(fpath)
@@ -85,8 +82,8 @@ decoder.set_output_filename(outname)
 #    - ERROR   ... suppress WARNING information
 # For the given info level, all lower level information will be suppressed.
 #decoder.set_verbosity(fmwk.MSG.DEBUG)
-decoder.set_verbosity(fmwk.MSG.INFO)
-#decoder.set_verbosity(fmwk.MSG.NORMAL)
+#decoder.set_verbosity(fmwk.MSG.INFO)
+decoder.set_verbosity(fmwk.MSG.NORMAL)
 
 # Set debug mode True if you wish to continue in the decoding event
 # loop with exception handling. This avoids saving an event with
@@ -94,8 +91,8 @@ decoder.set_verbosity(fmwk.MSG.INFO)
 # in the decoding event loop. When turned off, the program exits as
 # soon as it encounters any issue.
 
-#decoder.debug_mode(False)
-decoder.debug_mode(True)
+decoder.debug_mode(False)
+#decoder.debug_mode(True)
 
 # Finish configuration. Now run it.
 status = decoder.run()

@@ -54,9 +54,11 @@ namespace larlight {
       return false;
     }
     if(!_storage){
-      Message::send(MSG::ERROR,__FUNCTION__,"Stoarge I/O pointer is empty.");
+      Message::send(MSG::ERROR,__FUNCTION__,"Storage I/O pointer is empty.");
       return false;
     }
+
+    Message::send(MSG::INFO,__FUNCTION__,Form("Verbosit level is %d",_verbosity_level));
 
     _decoder->set_debug_mode(_debug_mode);
     _decoder->set_verbosity(_verbosity_level);

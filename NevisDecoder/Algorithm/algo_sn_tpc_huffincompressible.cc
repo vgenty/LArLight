@@ -176,7 +176,8 @@ namespace larlight {
       
     case FEM::EVENT_HEADER:
 
-      Message::send(MSG::DEBUG, __FUNCTION__, Form("See FEM:EVENT_HEADER 0x%x",word));
+      if(_verbosity[MSG::DEBUG])
+	Message::send(MSG::DEBUG, __FUNCTION__, Form("See FEM:EVENT_HEADER 0x%x",word));
       
       if( (last_word_class == FEM::EVENT_LAST_WORD && !(_header_info.nwords)) || !(_event_data)) {
 	
@@ -200,7 +201,8 @@ namespace larlight {
 
     case FEM::FEM_HEADER:
 
-      Message::send(MSG::DEBUG, __FUNCTION__, Form("See FEM:FEM_HEADER 0x%x",word));
+      if(_verbosity[MSG::DEBUG])
+	Message::send(MSG::DEBUG, __FUNCTION__, Form("See FEM:FEM_HEADER 0x%x",word));
       
       if(status){ 
 
@@ -224,7 +226,9 @@ namespace larlight {
 
     case FEM::EVENT_LAST_WORD:
 
-      Message::send(MSG::DEBUG, __FUNCTION__, Form("See FEM:EVENT_LAST_WORD 0x%x",word));
+      if(_verbosity[MSG::DEBUG])
+
+	Message::send(MSG::DEBUG, __FUNCTION__, Form("See FEM:EVENT_LAST_WORD 0x%x",word));
       
       if ( last_word_class == FEM::CHANNEL_PACKET_LAST_WORD ) {
 
@@ -285,7 +289,8 @@ namespace larlight {
     
     default:
 
-      Message::send(MSG::DEBUG, __FUNCTION__, Form("See: 0x%x",word));
+      	if(_verbosity[MSG::DEBUG])
+	  Message::send(MSG::DEBUG, __FUNCTION__, Form("See: 0x%x",word));
 
       UInt_t first_word  = (word & 0xffff);
       UInt_t second_word = (word >> 16);
@@ -395,15 +400,17 @@ namespace larlight {
     switch(word_class){
 
     case FEM::CHANNEL_HEADER: //0x4000
-
-      Message::send(MSG::DEBUG,__FUNCTION__,
-		    Form("\t is FEM::CHANNEL_HEADER") );
+      
+      if(_verbosity[MSG::DEBUG])
+	Message::send(MSG::DEBUG,__FUNCTION__,
+		      Form("\t is FEM::CHANNEL_HEADER") );
       
       // If this channel is NOT the first channel in a FEM
       if ( last_word_class == FEM::CHANNEL_PACKET_LAST_WORD ) {
 
-	Message::send(MSG::DEBUG,__FUNCTION__,
-		      Form("\t last was FEM::CHANNEL_PACKET_LAST_WORD") );
+	if(_verbosity[MSG::DEBUG])
+	  Message::send(MSG::DEBUG,__FUNCTION__,
+			Form("\t last was FEM::CHANNEL_PACKET_LAST_WORD") );
 	
         _channel_number_holder = (word & 0x3f);
         _readout_frame_number_holder = ( ( word >> 6) & 0x3f );
@@ -416,8 +423,9 @@ namespace larlight {
       // for the case that the last channel has no data after 0-suppression
       else if ( last_word_class == FEM::CHANNEL_HEADER ) { //two headers back to back
 
-	Message::send(MSG::DEBUG,__FUNCTION__,
-		      Form("\t last was FEM::CHANNEL_HEADER") );
+	if(_verbosity[MSG::DEBUG])
+	  Message::send(MSG::DEBUG,__FUNCTION__,
+			Form("\t last was FEM::CHANNEL_HEADER") );
 	
         // Store and clear
         store_ch_data();
@@ -435,8 +443,9 @@ namespace larlight {
       // in a FEM
       else if ( last_word_class == FEM::FEM_HEADER ) {
 
-	Message::send(MSG::DEBUG,__FUNCTION__,
-		      Form("\t last was FEM::FEM_HEADER") );
+	if(_verbosity[MSG::DEBUG])
+	  Message::send(MSG::DEBUG,__FUNCTION__,
+			Form("\t last was FEM::FEM_HEADER") );
 	
         if(_verbosity[MSG::DEBUG])
           Message::send(MSG::INFO,__FUNCTION__, "word = channel header, last word = FEM header");
@@ -456,13 +465,14 @@ namespace larlight {
       //Vic: this is OK now, data still coming out just fine from the previous frame, there was no end of packet right before this
       else if ( last_word_class == FEM::CHANNEL_WORD ) { 
 
-	Message::send(MSG::DEBUG,__FUNCTION__,
-		      Form("\t last was FEM::CHANNEL_WORD") );
-
+	if(_verbosity[MSG::DEBUG])
+	  Message::send(MSG::DEBUG,__FUNCTION__,
+			Form("\t last was FEM::CHANNEL_WORD") );
+	
 	// Store and clear
-
-	Message::send(MSG::WARNING,__FUNCTION__,
-		      Form("Storing channel data") );
+	if(_verbosity[MSG::WARNING])
+	  Message::send(MSG::WARNING,__FUNCTION__,
+			Form("Storing channel data") );
 	
 	store_ch_data();
 
@@ -471,7 +481,6 @@ namespace larlight {
         // Set the new channel info
         _channel_number_holder = (word & 0x3f);
         _readout_frame_number_holder = ( ( word >> 6) & 0x3f );
-
 
 	if(_verbosity[MSG::DEBUG])
           Message::send( MSG::DEBUG,__FUNCTION__, 
@@ -489,12 +498,12 @@ namespace larlight {
       break;
     
     case FEM::CHANNEL_TIME: {
-
+	if(_verbosity[MSG::DEBUG])
       Message::send(MSG::DEBUG,__FUNCTION__,
 		    Form("\t is FEM::CHANNEL_TIME") );
       
       if ( ( last_word_class != FEM::CHANNEL_HEADER ) && ( last_word_class != FEM::CHANNEL_PACKET_LAST_WORD ) ) {
-
+	if(_verbosity[MSG::DEBUG])
 	Message::send(MSG::DEBUG,__FUNCTION__,
 		      Form("\t last was not FEM::CHANNEL_HEADER or FEM::CHANNEL_PACKET_LAST_WORD") );
 	
@@ -504,7 +513,7 @@ namespace larlight {
         Message::send(MSG::ERROR,__FUNCTION__,
 		      Form("Unexpected channel time word (%x) with the previous word %x (word type %d)!", word, last_word, last_word_class ) );
       } else {
-
+	if(_verbosity[MSG::DEBUG])
 	Message::send(MSG::DEBUG,__FUNCTION__,
 		      Form("\t setting readout sample number 0x%x",word & 0xfff));
 	
@@ -515,7 +524,7 @@ namespace larlight {
     }
 
     case FEM::CHANNEL_PACKET_LAST_WORD: { //0x3000
-
+	if(_verbosity[MSG::DEBUG])
       Message::send(MSG::DEBUG,__FUNCTION__,
 		      Form("\t is FEM:CHANNEL_PACKET_LAST_WORD"));
 	
@@ -534,9 +543,10 @@ namespace larlight {
       break;
 
     default:
+      if(_verbosity[MSG::DEBUG])
 
-      Message::send(MSG::DEBUG,__FUNCTION__,
-		    Form("\t is an ADC!"));
+	Message::send(MSG::DEBUG,__FUNCTION__,
+		      Form("\t is an ADC!"));
       
       status = decode_ch_word(word,last_word);
 
