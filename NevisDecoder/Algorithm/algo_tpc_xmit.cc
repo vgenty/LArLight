@@ -193,7 +193,7 @@ namespace larlight {
 
     // Vic: number of words in the header is ODD, how does this even happen on 64 channels?
     Message::send(MSG::INFO,__FUNCTION__,
-		  Form("Vic atrificially adding -=1 to _nwords\n"));
+		  Form("Vic artificially adding -=1 to _nwords\n"));
     
     _nwords-=1;
     if(_nwords!=_header_info.nwords){
@@ -310,7 +310,7 @@ namespace larlight {
 	print(MSG::INFO,__FUNCTION__,
 	      Form("Storing event %u with %zu channel entries...",
 		   _header_info.event_number, _event_data->size()));
-
+	
       }
       
       _event_data->set_module_address         ( _header_info.module_address         );

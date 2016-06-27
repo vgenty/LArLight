@@ -10,8 +10,8 @@ namespace larlight {
   }  
 
   FEM::FEM_WORD algo_sn_tpc_huffincompressible::get_word_class(const UInt_t word) const {
-      // One of core functions to identify PMT binary word format
-      if( word == 0x0 ) return FEM::UNDEFINED_WORD;
+
+    if( word == 0x0 ) return FEM::UNDEFINED_WORD;
       else if( (word & 0xffffffff) == 0xffffffff ) // Unique marker, but with the huffman
                                                    // coding, not unique anymore
         return FEM::EVENT_HEADER;
@@ -153,7 +153,7 @@ namespace larlight {
 
       if( !(word_class == FEM::EVENT_HEADER && 
 	    last_word_class == FEM::EVENT_LAST_WORD ) ) {
-
+	
 	_last_word = word;
 	return status;
       }
@@ -168,16 +168,23 @@ namespace larlight {
     // (*) channel last word of packet
     // (*) channel ADC word (non-Huffman compression)
     //
-    switch(word_class){
 
+    //current word class
+    switch(word_class) {
+
+
+      
     case FEM::EVENT_HEADER:
 
+      Message::send(MSG::DEBUG, __FUNCTION__, Form("See FEM:EVENT_HEADER 0x%x",word));
+      
       if( (last_word_class == FEM::EVENT_LAST_WORD && !(_header_info.nwords)) || !(_event_data)) {
 	
 	_search_for_next_event = false;
 	
 	status = process_event_header(word,_last_word);
       }
+
       else{
 
 	UInt_t first_word  = (word & 0xffff);
@@ -192,6 +199,8 @@ namespace larlight {
       break;
 
     case FEM::FEM_HEADER:
+
+      Message::send(MSG::DEBUG, __FUNCTION__, Form("See FEM:FEM_HEADER 0x%x",word));
       
       if(status){ 
 
@@ -214,23 +223,29 @@ namespace larlight {
       break;
 
     case FEM::EVENT_LAST_WORD:
+
+      Message::send(MSG::DEBUG, __FUNCTION__, Form("See FEM:EVENT_LAST_WORD 0x%x",word));
       
       if ( last_word_class == FEM::CHANNEL_PACKET_LAST_WORD ) {
+
         // This is the normal end of event, with some packets in the last channel
+	
         status = process_event_last_word(word,_last_word);
 
       }
 
       else if ( last_word_class == FEM::CHANNEL_WORD ) {
 	Message::send( MSG::WARNING,__FUNCTION__,
-		       Form("Possible frame rollover") );
+		       Form("Possible frame rollover detected") );
 	
 	Message::send( MSG::WARNING,__FUNCTION__,
 		       Form("word = event last word, last word = channel word. nwords = %d, header info nwords = %d" , _nwords, _header_info.nwords) );
 	
 	status = process_event_last_word(word,_last_word);
+	
       }
       else if ( ( last_word_class == FEM::CHANNEL_HEADER ) || ( _last_word == 0x0 ) ) {
+
         // If the last channel contains no packet after zero-suppression,
         // we have to store this channel when the end of FEM or the end of event is met.
         // In this decoder, an "event" contains a single FEM;
@@ -240,13 +255,12 @@ namespace larlight {
         // There could be two possibilities for the previous word in this case
         // 1) Channel header
         // 2) a 16-bit zero-padding
+	
         store_ch_data();
 	status = process_event_last_word(word,_last_word);
 	
-      } else {
-	//neither happened, we didn't see 16 bit 0 pad, channel header... or end of packet... we saw uncompressed ADC
-	//with possible frame rollover
-	
+      } else { // on __event last word__, last word not __channel word__ or __channel header__ or __0x0__ or __channel packet last word__
+
 	Message::send( MSG::WARNING,__FUNCTION__,
 		       Form("EVENT end unexpected... word = event last word, nwords = %d, header info nwords = %d" , _nwords, _header_info.nwords) );
 	// Store
@@ -256,7 +270,8 @@ namespace larlight {
 	  Message::send( MSG::INFO,__FUNCTION__, Form("STATUS ok... number of words matched to header. word = event last word, nwords = %d, header info nwords = %d, we have _nwords++, checksum, and store_event()" , _nwords, _header_info.nwords) );
 
 	  _nwords++;
-	  // is line below right?
+
+	  // is line below correct?
 	  _checksum += word;
 
 	  _last_word = word;
@@ -269,12 +284,16 @@ namespace larlight {
       
     
     default:
+
+      Message::send(MSG::DEBUG, __FUNCTION__, Form("See: 0x%x",word));
+
       UInt_t first_word  = (word & 0xffff);
       UInt_t second_word = (word >> 16);
 
       status = process_ch_word(first_word,_last_word);
 
       if(status) status = process_ch_word(second_word,_last_word);
+
     }
 
     if(!status){
@@ -306,10 +325,9 @@ namespace larlight {
     // Make an explicit check.
     // Previous word should be the channel last word of packet 
     //
-    // vic: sometimes it's not for frame crossing
+    // vic: sometimes it's not clear... for frame crossing as example
     
     UInt_t last_word_class = get_word_class(last_word);
-
 
     if ( last_word_class == FEM::CHANNEL_WORD ) {
 
@@ -347,6 +365,7 @@ namespace larlight {
     // ch data (adc) ... unmarked, either Huffman compressed or not
     // ch packet last word ... marked
     //
+    
     bool status = true;
     UInt_t word_class      = get_word_class(word);
     UInt_t last_word_class = get_word_class(last_word);
@@ -377,9 +396,15 @@ namespace larlight {
 
     case FEM::CHANNEL_HEADER: //0x4000
 
+      Message::send(MSG::DEBUG,__FUNCTION__,
+		    Form("\t is FEM::CHANNEL_HEADER") );
+      
       // If this channel is NOT the first channel in a FEM
       if ( last_word_class == FEM::CHANNEL_PACKET_LAST_WORD ) {
 
+	Message::send(MSG::DEBUG,__FUNCTION__,
+		      Form("\t last was FEM::CHANNEL_PACKET_LAST_WORD") );
+	
         _channel_number_holder = (word & 0x3f);
         _readout_frame_number_holder = ( ( word >> 6) & 0x3f );
 
@@ -391,6 +416,9 @@ namespace larlight {
       // for the case that the last channel has no data after 0-suppression
       else if ( last_word_class == FEM::CHANNEL_HEADER ) { //two headers back to back
 
+	Message::send(MSG::DEBUG,__FUNCTION__,
+		      Form("\t last was FEM::CHANNEL_HEADER") );
+	
         // Store and clear
         store_ch_data();
 
@@ -406,6 +434,10 @@ namespace larlight {
       // Check if the last word was an FEM header, i.e. this is the first channel
       // in a FEM
       else if ( last_word_class == FEM::FEM_HEADER ) {
+
+	Message::send(MSG::DEBUG,__FUNCTION__,
+		      Form("\t last was FEM::FEM_HEADER") );
+	
         if(_verbosity[MSG::DEBUG])
           Message::send(MSG::INFO,__FUNCTION__, "word = channel header, last word = FEM header");
 
@@ -424,9 +456,18 @@ namespace larlight {
       //Vic: this is OK now, data still coming out just fine from the previous frame, there was no end of packet right before this
       else if ( last_word_class == FEM::CHANNEL_WORD ) { 
 
-	// Store and clear
-        //store_ch_data();
+	Message::send(MSG::DEBUG,__FUNCTION__,
+		      Form("\t last was FEM::CHANNEL_WORD") );
 
+	// Store and clear
+
+	Message::send(MSG::WARNING,__FUNCTION__,
+		      Form("Storing channel data") );
+	
+	store_ch_data();
+
+
+	
         // Set the new channel info
         _channel_number_holder = (word & 0x3f);
         _readout_frame_number_holder = ( ( word >> 6) & 0x3f );
@@ -436,12 +477,8 @@ namespace larlight {
           Message::send( MSG::DEBUG,__FUNCTION__, 
                          Form("Frame rollover? New channel number: %d, New frame number: %d", _channel_number_holder, _readout_frame_number_holder ) ); 
 	
-	
-
-	
       }
       else {
-
 	Message::send(MSG::ERROR,__FUNCTION__,
 		      Form("Unexpected channel header (%x)! Last word = %x",word,last_word));
 
@@ -452,19 +489,36 @@ namespace larlight {
       break;
     
     case FEM::CHANNEL_TIME: {
+
+      Message::send(MSG::DEBUG,__FUNCTION__,
+		    Form("\t is FEM::CHANNEL_TIME") );
+      
       if ( ( last_word_class != FEM::CHANNEL_HEADER ) && ( last_word_class != FEM::CHANNEL_PACKET_LAST_WORD ) ) {
+
+	Message::send(MSG::DEBUG,__FUNCTION__,
+		      Form("\t last was not FEM::CHANNEL_HEADER or FEM::CHANNEL_PACKET_LAST_WORD") );
+	
+	
 
         status = false;
         Message::send(MSG::ERROR,__FUNCTION__,
 		      Form("Unexpected channel time word (%x) with the previous word %x (word type %d)!", word, last_word, last_word_class ) );
       } else {
+
+	Message::send(MSG::DEBUG,__FUNCTION__,
+		      Form("\t setting readout sample number 0x%x",word & 0xfff));
+	
         _ch_data.set_readout_sample_number( (word & 0xfff) );
+	
       }
       break;
     }
 
     case FEM::CHANNEL_PACKET_LAST_WORD: { //0x3000
 
+      Message::send(MSG::DEBUG,__FUNCTION__,
+		      Form("\t is FEM:CHANNEL_PACKET_LAST_WORD"));
+	
       status = decode_ch_word( ( word & 0xfff ), last_word );
 
       // Store the channel data
@@ -474,12 +528,18 @@ namespace larlight {
     }
 
     case FEM::UNDEFINED_WORD:
+
       Message::send( MSG::WARNING, __FUNCTION__, Form("Expected 16-bit zero-padding, last word 0x%x.", last_word) );
+
       break;
 
     default:
 
+      Message::send(MSG::DEBUG,__FUNCTION__,
+		    Form("\t is an ADC!"));
+      
       status = decode_ch_word(word,last_word);
+
       if ( !status ) Message::send( MSG::ERROR, __FUNCTION__, Form("Error in Event 0x%x, Channel 0x%x, Readout sample number 0x%x", _header_info.event_number-1, _channel_number_holder, _ch_data.readout_sample_number_RAW() ) );
     }
 
@@ -603,12 +663,14 @@ namespace larlight {
 
   void algo_sn_tpc_huffincompressible::store_ch_data() {
     // Save
+
+    Message::send( MSG::INFO, __FUNCTION__, Form("Ch 0x%x, stored %zu adc words", _channel_number_holder, _event_data->size() ) );
     _ch_data.set_module_id( _header_info.module_id );
     _ch_data.set_module_address( _header_info.module_address );
     _ch_data.set_channel_number( _channel_number_holder );
     _ch_data.set_readout_frame_number( _readout_frame_number_holder );
     _event_data->push_back( _ch_data );
-    //Message::send( MSG::INFO, __FUNCTION__, Form("Ch 0x%x, stored %zu adc words", _channel_number_holder, _event_data->size() ) );
+
 
     // Clear
     _ch_data.clear_data();

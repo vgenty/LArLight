@@ -36,15 +36,16 @@ outname = fname[0:fname.rfind('.')] + ".root"
 #outname = fpath.replace('.dat','.root')
 
 # Decoder algorithm instance ... currently xmit, slow, or trigger
+
 #algo=fmwk.algo_pmt_xmit()
 #algo=fmwk.algo_slow_readout_decoder()
 #algo=fmwk.algo_tpc_xmit()
 #algo=fmwk.algo_trig_decoder()
 #algo=fmwk.algo_tpc_huffman()
-algo=fmwk.algo_sn_tpc_huffincompressible()
 #algo=fmwk.algo_sn_tpc_huffman()
 
-algo.set_verbosity(fmwk.MSG.NORMAL)
+algo=fmwk.algo_sn_tpc_huffincompressible()
+
 
 # Set algorithm's back-trace mode with positive int argument (=# words to be backtraced)
 algo.set_backtrace_mode(50)
@@ -65,7 +66,10 @@ decoder.set_format(fmwk.FORMAT.BINARY)
 # Set read-block size 
 
 #How many words?
-#decoder.set_read_block_size(1173)
+#decoder.set_read_block_size(734)
+print "caca"
+#decoder.set_read_block_size(49224)#49224
+
 
 # Set input file path
 decoder.add_input_filename(fpath)
@@ -80,9 +84,9 @@ decoder.set_output_filename(outname)
 #    - WARNING ... suppress NORMAL information
 #    - ERROR   ... suppress WARNING information
 # For the given info level, all lower level information will be suppressed.
-decoder.set_verbosity(fmwk.MSG.DEBUG)
-# decoder.set_verbosity(fmwk.MSG.INFO)
-# decoder.set_verbosity(fmwk.MSG.NORMAL)
+#decoder.set_verbosity(fmwk.MSG.DEBUG)
+decoder.set_verbosity(fmwk.MSG.INFO)
+#decoder.set_verbosity(fmwk.MSG.NORMAL)
 
 # Set debug mode True if you wish to continue in the decoding event
 # loop with exception handling. This avoids saving an event with

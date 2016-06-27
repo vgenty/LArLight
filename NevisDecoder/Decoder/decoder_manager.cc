@@ -149,28 +149,34 @@ namespace larlight {
       }
 
       word = (_read_by_block) ? _fin.read_multi_word(_read_block_size) : _fin.read_word();
+
     }
     
     if(!status && !_debug_mode){
 
       Message::send(MSG::ERROR,__FUNCTION__,Form("Event loop terminated. Stored: %d events",_storage->get_entries()));
 
-    }else if(!(_decoder->is_event_empty())){
+    }else if(!(_decoder->is_event_empty())) {
 
       Message::send(MSG::WARNING,__FUNCTION__,"Last event not stored by algorithm. Missing end-of-event word??");
 
-      if(_decoder->check_event_quality()){
+      auto event_quality =_decoder->check_event_quality();
+	
+      Message::send(MSG::WARNING,__FUNCTION__,Form("Event quality is %d",event_quality));
+
+      if(event_quality) {
 
 	Message::send(MSG::WARNING,__FUNCTION__,"Last event checksum agreed. Saving on file...");
 
 	_storage->next_event();
 
-      }else if(_fin.eof()){
+      } else if(_fin.eof()) {
 
 	Message::send(MSG::WARNING,__FUNCTION__,"Skip saving the last event...");
 
 	// Torelate the last event failure in case file is not closed properly
 	//status=false;
+	
 	status = true;
 
       }else{
