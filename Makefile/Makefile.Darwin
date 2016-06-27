@@ -1,8 +1,8 @@
 #COMPILER:
-CC              = gcc
-CXX             = $(LARLIGHT_CXX)
-LINKER          = libtool
-SOMAKER         = libtool 
+CC              = clang
+CXX             = clang++ -stdlib=libc++ -std=c++11
+LINKER          = /usr/bin/libtool
+SOMAKER         = /usr/bin/libtool 
 
 #######"-O" FLAG: (not always ideal with debugging info)
 CFLAGS          += -O3
@@ -79,11 +79,3 @@ SOFLAGS         += -undefined dynamic_lookup
 #FORTRAN FLAGS:
 FFLAGS          += -Wall
 FLDFLAGS        += -lstdc++ -bundle -undefined dynamic_lookup -O2 -bind_at_load  -L. 
-
-################
-#NOT USED -> OLD VERSION: DEPRECATED???
-################
-#CXXFLAGS        += -O -W -Wall -Wno-deprecated
-#LD              = MACOSX_DEPLOYMENT_TARGET=10.4 g++
-#MACOSX_DEPLOYMENT_TARGET=10.4 
-#-install_name (MACH-O) = -soname (EFL)

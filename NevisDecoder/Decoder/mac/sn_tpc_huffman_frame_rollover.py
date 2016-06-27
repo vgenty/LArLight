@@ -60,12 +60,12 @@ decoder.set_decoder(algo);
 decoder.set_format(fmwk.FORMAT.BINARY)
 
 # Set whether or not to ready by block 
-decoder.set_read_by_block(True)
+#decoder.set_read_by_block(True)
 
 # Set read-block size 
 
 #How many words?
-#decoder.set_read_block_size(50000)
+#decoder.set_read_block_size(1173)
 
 # Set input file path
 decoder.add_input_filename(fpath)

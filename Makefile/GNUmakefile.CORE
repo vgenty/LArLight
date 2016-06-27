@@ -28,7 +28,7 @@ $(DICT).cc: $(HEADERS) LinkDef.h
 lib/$(SHLIB): $(OBJECTS) $(DICT).o
 	@echo '<< generating $(SHLIB) >>'
 	@mkdir -p lib
-	@$(SOMAKER) $(SOFLAGS) -o lib/$(SHLIB) $(filter-out $(DICT).o, $(OBJECTS)) $(DICT).o
+	@$(SOMAKER) $(SOFLAGS) $(filter-out $(DICT).o, $(OBJECTS)) $(DICT).o -o lib/$(SHLIB)
 
 # rule for making symlink in $(LARLIGHT_LIBDIR)
 $(LARLIGHT_LIBDIR)/$(SHLIB): lib/$(SHLIB)

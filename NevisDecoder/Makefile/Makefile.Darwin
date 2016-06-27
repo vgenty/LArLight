@@ -1,8 +1,8 @@
 #COMPILER:
 CC              = gcc
 CXX             = clang++ -std=c++11 
-LINKER          = libtool
-SOMAKER         = libtool 
+LINKER          = /usr/bin/libtool
+SOMAKER         = /usr/bin/libtool 
 
 #######"-O" FLAG: (not always ideal with debugging info)
 CFLAGS          += -O2

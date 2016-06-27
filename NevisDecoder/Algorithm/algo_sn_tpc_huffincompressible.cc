@@ -548,12 +548,12 @@ namespace larlight {
     bool status = true;
     // Simply append if it is not compressed
     if( !(is_compressed(word)) ) _ch_data.push_back( (word & 0xfff) );
-
+    
     else if(!(_ch_data.size())){
 
       // This is a problem: if huffman coded, then we must have a previous ADC sample
       // as a reference. Raise an error.
-
+      
       Message::send(MSG::ERROR,__FUNCTION__,
 		    Form("Huffman coded word %x found while the previous was non-ADC word (%x)!",
 			 word,last_word));
