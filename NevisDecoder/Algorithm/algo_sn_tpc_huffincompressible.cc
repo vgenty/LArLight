@@ -12,50 +12,50 @@ namespace larlight {
   FEM::FEM_WORD algo_sn_tpc_huffincompressible::get_word_class(const UInt_t word) const {
 
     if( word == 0x0 ) return FEM::UNDEFINED_WORD;
-      else if( (word & 0xffffffff) == 0xffffffff ) // Unique marker, but with the huffman
-                                                   // coding, not unique anymore
-        return FEM::EVENT_HEADER;
+    else if( (word & 0xffffffff) == 0xffffffff ) // Unique marker, but with the huffman
+      // coding, not unique anymore
+      return FEM::EVENT_HEADER;
       
-      else if( (word & 0xffffffff) == 0xe0000000 ) // Unique marker, but with the huffman
-                                                   // coding, not unique anymore
-        return FEM::EVENT_LAST_WORD;
+    else if( (word & 0xffffffff) == 0xe0000000 ) // Unique marker, but with the huffman
+      // coding, not unique anymore
+      return FEM::EVENT_LAST_WORD;
       
-      if( (word & 0xffff) == 0xffff )              // Unique marker, but with the huffman
-                                                   // coding, not unique anymore
-        return FEM::FEM_HEADER;
+    if( (word & 0xffff) == 0xffff )              // Unique marker, but with the huffman
+      // coding, not unique anymore
+      return FEM::FEM_HEADER;
 
-      else if( (word & 0xf000) == 0xf000 )         // Could be ADC word
-        return FEM::FEM_HEADER;
+    else if( (word & 0xf000) == 0xf000 )         // Could be ADC word
+      return FEM::FEM_HEADER;
       
-      else if( !((word>>15) & 0x1) ) {
+    else if( !((word>>15) & 0x1) ) {
 
-        if ( ( word & 0xf000 ) == 0x1000 )         // Channel time word
-          return FEM::CHANNEL_TIME;
+      if ( ( word & 0xf000 ) == 0x1000 )         // Channel time word
+	return FEM::CHANNEL_TIME;
 	
-        else if( (word & 0xf000) == 0x2000 )       // Uncompressed ADC word
-          return FEM::CHANNEL_WORD;
+      else if( (word & 0xf000) == 0x2000 )       // Uncompressed ADC word
+	return FEM::CHANNEL_WORD;
 	
-        else if ( ( word & 0xf000 ) == 0x3000 )    // Channel: last word of the packet
-          return FEM::CHANNEL_PACKET_LAST_WORD;
+      else if ( ( word & 0xf000 ) == 0x3000 )    // Channel: last word of the packet
+	return FEM::CHANNEL_PACKET_LAST_WORD;
 	
-        else if( (word & 0xf000) == 0x4000 )       // Channel first word
-          return FEM::CHANNEL_HEADER;
+      else if( (word & 0xf000) == 0x4000 )       // Channel first word
+	return FEM::CHANNEL_HEADER;
       
-        else
-          return FEM::UNDEFINED_WORD;              // Undefined
-      }
-      else if( ((word>>15) & 0x1) ){
-        return FEM::CHANNEL_WORD;                  // compressed ADC word
-      }else {
-        return FEM::UNDEFINED_WORD;
-      }
+      else
+	return FEM::UNDEFINED_WORD;              // Undefined
+    }
+    else if( ((word>>15) & 0x1) ){
+      return FEM::CHANNEL_WORD;                  // compressed ADC word
+    }else {
+      return FEM::UNDEFINED_WORD;
+    }
 
     // FEM::FEM_WORD code = algo_tpc_huffman::get_word_class(word); 
   }
 
   //#################################################
   bool algo_sn_tpc_huffincompressible::decode_fem_header(const UInt_t *event_header){
-  //#################################################
+    //#################################################
 
     bool status=true;
     //
@@ -103,15 +103,15 @@ namespace larlight {
     // Report if verbosity is set.
     // if(_verbosity[MSG::INFO])
     //   {
-	std::string msg;
-	for(size_t i=0; i<FEM_HEADER_COUNT; ++i)
-	  msg += Form("%x ", event_header[i]);
-	Message::send(MSG::INFO, __FUNCTION__, Form("Decoded Header: %s",msg.c_str()));
-	Message::send(MSG::INFO, __FUNCTION__, Form("Module %d (ID=%d)", _header_info.module_address, _header_info.module_id));
-	Message::send(MSG::INFO, __FUNCTION__, Form("Event ID %d",_header_info.event_number));
-	Message::send(MSG::INFO, __FUNCTION__, Form("Frame ID %d",_header_info.event_frame_number));
-	Message::send(MSG::INFO, __FUNCTION__, Form("Number of Words = %d",_header_info.nwords));
-	Message::send(MSG::INFO, __FUNCTION__, Form("Checksum = %x", _header_info.checksum));
+    std::string msg;
+    for(size_t i=0; i<FEM_HEADER_COUNT; ++i)
+      msg += Form("%x ", event_header[i]);
+    Message::send(MSG::INFO, __FUNCTION__, Form("Decoded Header: %s",msg.c_str()));
+    Message::send(MSG::INFO, __FUNCTION__, Form("Module %d (ID=%d)", _header_info.module_address, _header_info.module_id));
+    Message::send(MSG::INFO, __FUNCTION__, Form("Event ID %d",_header_info.event_number));
+    Message::send(MSG::INFO, __FUNCTION__, Form("Frame ID %d",_header_info.event_frame_number));
+    Message::send(MSG::INFO, __FUNCTION__, Form("Number of Words = %d",_header_info.nwords));
+    Message::send(MSG::INFO, __FUNCTION__, Form("Checksum = %x", _header_info.checksum));
 
     //  }
 
@@ -289,8 +289,8 @@ namespace larlight {
     
     default:
 
-      	if(_verbosity[MSG::DEBUG])
-	  Message::send(MSG::DEBUG, __FUNCTION__, Form("See: 0x%x",word));
+      if(_verbosity[MSG::DEBUG])
+	Message::send(MSG::DEBUG, __FUNCTION__, Form("See: 0x%x",word));
 
       UInt_t first_word  = (word & 0xffff);
       UInt_t second_word = (word >> 16);
@@ -379,12 +379,12 @@ namespace larlight {
     if(word == 0x0){
 
       /*
-      if(get_word_class(last_word)!=FEM::CHANNEL_LAST_WORD){
+	if(get_word_class(last_word)!=FEM::CHANNEL_LAST_WORD){
 
 	Message::send(MSG::ERROR,__FUNCTION__,
-		      Form("Unexpected Zero-padding found after %x",last_word));
+	Form("Unexpected Zero-padding found after %x",last_word));
 	status = false;
-      }else if(_verbosity[MSG::INFO])
+	}else if(_verbosity[MSG::INFO])
       */
       
       if ( get_word_class(last_word) == FEM::CHANNEL_PACKET_LAST_WORD ) {
@@ -462,7 +462,8 @@ namespace larlight {
                         Form("New channel header: %d, New frame number: %d", _channel_number_holder, _readout_frame_number_holder ) );
 
       }
-      //Vic: this is OK now, data still coming out just fine from the previous frame, there was no end of packet right before this
+
+      //vic: current word is channel header but packet didn't end cleanly (i.e. with end of channel packet)
       else if ( last_word_class == FEM::CHANNEL_WORD ) { 
 
 	if(_verbosity[MSG::DEBUG])
@@ -476,15 +477,15 @@ namespace larlight {
 	
 	store_ch_data();
 
-
 	
         // Set the new channel info
         _channel_number_holder = (word & 0x3f);
         _readout_frame_number_holder = ( ( word >> 6) & 0x3f );
 
-	if(_verbosity[MSG::DEBUG])
-          Message::send( MSG::DEBUG,__FUNCTION__, 
-                         Form("Frame rollover? New channel number: %d, New frame number: %d", _channel_number_holder, _readout_frame_number_holder ) ); 
+	if(_verbosity[MSG::WARNING])
+          Message::send( MSG::WARNING,__FUNCTION__, 
+                         Form("Frame rollover? New channel number: %d, New frame number: %d", _channel_number_holder, _readout_frame_number_holder ) );
+	
 	
       }
       else {
@@ -498,14 +499,14 @@ namespace larlight {
       break;
     
     case FEM::CHANNEL_TIME: {
-	if(_verbosity[MSG::DEBUG])
-      Message::send(MSG::DEBUG,__FUNCTION__,
-		    Form("\t is FEM::CHANNEL_TIME") );
+      if(_verbosity[MSG::DEBUG])
+	Message::send(MSG::DEBUG,__FUNCTION__,
+		      Form("\t is FEM::CHANNEL_TIME") );
       
       if ( ( last_word_class != FEM::CHANNEL_HEADER ) && ( last_word_class != FEM::CHANNEL_PACKET_LAST_WORD ) ) {
 	if(_verbosity[MSG::DEBUG])
-	Message::send(MSG::DEBUG,__FUNCTION__,
-		      Form("\t last was not FEM::CHANNEL_HEADER or FEM::CHANNEL_PACKET_LAST_WORD") );
+	  Message::send(MSG::DEBUG,__FUNCTION__,
+			Form("\t last was not FEM::CHANNEL_HEADER or FEM::CHANNEL_PACKET_LAST_WORD") );
 	
 	
 
@@ -514,8 +515,8 @@ namespace larlight {
 		      Form("Unexpected channel time word (%x) with the previous word %x (word type %d)!", word, last_word, last_word_class ) );
       } else {
 	if(_verbosity[MSG::DEBUG])
-	Message::send(MSG::DEBUG,__FUNCTION__,
-		      Form("\t setting readout sample number 0x%x",word & 0xfff));
+	  Message::send(MSG::DEBUG,__FUNCTION__,
+			Form("\t setting readout sample number 0x%x",word & 0xfff));
 	
         _ch_data.set_readout_sample_number( (word & 0xfff) );
 	
@@ -524,8 +525,8 @@ namespace larlight {
     }
 
     case FEM::CHANNEL_PACKET_LAST_WORD: { //0x3000
-	if(_verbosity[MSG::DEBUG])
-      Message::send(MSG::DEBUG,__FUNCTION__,
+      if(_verbosity[MSG::DEBUG])
+	Message::send(MSG::DEBUG,__FUNCTION__,
 		      Form("\t is FEM:CHANNEL_PACKET_LAST_WORD"));
 	
       status = decode_ch_word( ( word & 0xfff ), last_word );
@@ -567,7 +568,7 @@ namespace larlight {
   
   //#########################################################
   bool algo_sn_tpc_huffincompressible::check_event_quality(){
-  //#########################################################
+    //#########################################################
 
     bool status = true;
 
@@ -613,7 +614,7 @@ namespace larlight {
   bool algo_sn_tpc_huffincompressible::decode_ch_word(const UInt_t word, 
 						      UInt_t &last_word)
   {
-  //#########################################################
+    //#########################################################
 
     bool status = true;
     // Simply append if it is not compressed
@@ -674,13 +675,22 @@ namespace larlight {
   void algo_sn_tpc_huffincompressible::store_ch_data() {
     // Save
 
-    Message::send( MSG::INFO, __FUNCTION__, Form("Ch 0x%x, stored %zu adc words", _channel_number_holder, _event_data->size() ) );
+    if(!_event_data) {
+      Message::send( MSG::INFO, __FUNCTION__, Form("event data pointer is 0x%x why was this called?",_event_data));
+      _event_data = (event_tpcfifo*)(_storage->get_data(DATA::TPCFIFO));
+    }
+
+    
+    //Message::send( MSG::INFO, __FUNCTION__, Form("event data pointer is 0x%x",_event_data));
+    Message::send( MSG::INFO, __FUNCTION__, Form("Ch 0x%x, stored %zu adc words",
+						 _channel_number_holder,
+						 _event_data->size() ) );
+    
     _ch_data.set_module_id( _header_info.module_id );
     _ch_data.set_module_address( _header_info.module_address );
     _ch_data.set_channel_number( _channel_number_holder );
     _ch_data.set_readout_frame_number( _readout_frame_number_holder );
     _event_data->push_back( _ch_data );
-
 
     // Clear
     _ch_data.clear_data();
